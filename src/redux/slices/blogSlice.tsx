@@ -1,4 +1,4 @@
-import {createAction, createAsyncThunk, createSlice} from '@reduxjs/toolkit';
+import {createAsyncThunk, createSlice} from '@reduxjs/toolkit';
 import axios from 'axios';
 
 export const getAllItemsBlog = createAsyncThunk(
@@ -72,7 +72,7 @@ const initialState: BlogState = {
   total: 0,
   loading: true,
   error: null,
-  theme: 'light',
+  theme: 'dark',
 };
 
 export const blogSlice = createSlice({

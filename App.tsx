@@ -1,22 +1,29 @@
 import React, {useState} from 'react';
-import {Provider} from 'react-redux';
+import {Provider, useDispatch, useSelector} from 'react-redux';
 import {NavigationContainer} from '@react-navigation/native';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import BlogScreen from './src/screens/BlogScreen';
 import BlogItemDetailScreen from './src/screens/BlogItemDetailScreen';
-import {store} from './src/redux/store';
+import {AppDispatch, store} from './src/redux/store';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import {StackParamList, TabParamList} from './src/models';
+import {BlogItems, StackParamList, TabParamList} from './src/models';
 import CreateScreen from './src/screens/CreateScreen';
 
 const Tab = createBottomTabNavigator<TabParamList>();
 
 function BottomTabs() {
+  const dispatch = useDispatch<AppDispatch>();
+  const {theme} = useSelector((state: BlogItems) => state.blogSlice);
+
   return (
     <Tab.Navigator
       screenOptions={{
-        tabBarActiveTintColor: '#252525',
+        tabBarActiveTintColor: theme === 'dark' ? '#A059F1' : '#FE4962',
+        tabBarStyle: {
+          backgroundColor: theme === 'dark' ? '#151517' : '#ffffff',
+          borderTopWidth: 0,
+        },
       }}>
       <Tab.Screen
         name="Home"
@@ -47,7 +54,6 @@ function BottomTabs() {
 const Stack = createNativeStackNavigator<StackParamList>();
 
 function HomeStack() {
-  const [modalVisible, setModalVisible] = useState(false);
   return (
     <Stack.Navigator>
       <Stack.Screen
@@ -55,20 +61,13 @@ function HomeStack() {
         component={BlogScreen}
         options={{
           headerShown: false,
-          headerRight: () => (
-            <Ionicons
-              name="create"
-              size={24}
-              color={'red'}
-              onPress={() => setModalVisible(true)}
-            />
-          ),
+          headerRight: () => <Ionicons name="create" size={24} color={'red'} />,
         }}
       />
       <Stack.Screen
         name="BlogDetails"
         component={BlogItemDetailScreen}
-        options={{title: 'Blog Details'}}
+        options={{headerShown: false, title: 'Blog Details'}}
       />
     </Stack.Navigator>
   );

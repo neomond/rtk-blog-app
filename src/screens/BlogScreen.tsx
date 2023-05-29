@@ -3,12 +3,13 @@ import {
   FlatList,
   Image,
   SafeAreaView,
+  StatusBar,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from 'react-native';
-import React, {useEffect, useState} from 'react';
+import React, {useEffect} from 'react';
 import {useDispatch, useSelector} from 'react-redux';
 import {AppDispatch} from '../redux/store';
 import {BlogItems} from '../models';
@@ -53,21 +54,26 @@ const BlogScreen = ({navigation}: any) => {
   return (
     <SafeAreaView
       style={[styles.lightContainer, theme === 'dark' && styles.darkContainer]}>
+      <StatusBar
+        barStyle={theme === 'dark' ? 'light-content' : 'dark-content'}
+      />
       <View style={styles.header}>
         <TouchableOpacity>
           <Ionicons
             name="sunny"
-            size={20}
-            color={theme === 'dark' ? '#e3e3e3' : '#000'}
+            size={22}
+            color={theme === 'dark' ? '#A059F1' : '#FE4962'}
             onPress={() => handleToggle()}
           />
         </TouchableOpacity>
-        <Text style={[theme === 'dark' && {color: '#e3e3e3'}]}>All Blogs</Text>
+        <Text style={[{fontSize: 18}, theme === 'dark' && {color: '#e3e3e3'}]}>
+          Welcome!
+        </Text>
         <TouchableOpacity>
           <Ionicons
             name="notifications"
-            size={20}
-            color={theme === 'dark' ? '#e3e3e3' : '#000'}
+            size={22}
+            color={theme === 'dark' ? '#A059F1' : '#FE4962'}
           />
         </TouchableOpacity>
       </View>
@@ -82,14 +88,17 @@ const BlogScreen = ({navigation}: any) => {
             showsVerticalScrollIndicator={false}
             renderItem={({item}: any) => (
               <TouchableOpacity
-                style={styles.postContainer}
+                style={[
+                  styles.postContainer,
+                  theme === 'dark' && {borderBottomColor: '#464646'},
+                ]}
                 onPress={() => goToDetail(item.id)}>
                 <Image source={{uri: item.avatar}} style={styles.avatar} />
                 <View style={styles.postContent}>
                   <Text
                     style={[
                       styles.title,
-                      theme === 'dark' && {color: '#e3e3e3'},
+                      theme === 'dark' && {color: '#CEC7C9'},
                     ]}>
                     {item.title}
                   </Text>
@@ -119,13 +128,14 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   darkContainer: {
-    backgroundColor: 'black',
+    backgroundColor: '#151517',
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     marginHorizontal: 16,
+    marginBottom: 20,
   },
   postContainer: {
     flexDirection: 'row',
@@ -146,7 +156,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 16,
     fontWeight: 'bold',
-    marginBottom: 8,
+    marginBottom: 4,
   },
   description: {
     fontSize: 14,

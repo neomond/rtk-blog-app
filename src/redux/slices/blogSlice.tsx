@@ -1,8 +1,8 @@
-import {createAsyncThunk, createSlice} from '@reduxjs/toolkit';
+import {createAction, createAsyncThunk, createSlice} from '@reduxjs/toolkit';
 import axios from 'axios';
 
 export const getAllItemsBlog = createAsyncThunk(
-  'blogs/getAll',
+  'blog/getAll',
   async (_, {rejectWithValue}) => {
     try {
       const response = await axios.get(
@@ -15,8 +15,38 @@ export const getAllItemsBlog = createAsyncThunk(
   },
 );
 
-export const deleteItemBlog = createAsyncThunk(
-  'blogs/delete',
+export const createItemBlog = createAsyncThunk(
+  'blog/create',
+  async (blogData: any, {rejectWithValue}) => {
+    try {
+      const response = await axios.post(
+        'https://64731455d784bccb4a3c3e14.mockapi.io/blogs/',
+        blogData,
+      );
+      return response.data;
+    } catch (error) {
+      return rejectWithValue('Error');
+    }
+  },
+);
+
+export const updateItemBlog = createAsyncThunk(
+  'blog/update',
+  async ({id, blogData}: {id: number; blogData: any}, {rejectWithValue}) => {
+    try {
+      const response = await axios.put(
+        `https://64731455d784bccb4a3c3e14.mockapi.io/blogs/${id}`,
+        blogData,
+      );
+      return response.data;
+    } catch (error) {
+      return rejectWithValue('Error');
+    }
+  },
+);
+
+export const deleteBlog = createAsyncThunk(
+  'blog/delete',
   async (id: number, {rejectWithValue}) => {
     try {
       await axios.delete(
@@ -34,6 +64,7 @@ interface BlogState {
   total: number;
   loading: boolean;
   error: null;
+  theme: 'dark' | 'light';
 }
 
 const initialState: BlogState = {
@@ -41,14 +72,15 @@ const initialState: BlogState = {
   total: 0,
   loading: true,
   error: null,
+  theme: 'light',
 };
 
 export const blogSlice = createSlice({
   name: 'blogSlice',
   initialState: initialState,
   reducers: {
-    setTotalCustomers: (state, action) => {
-      state.total = action.payload;
+    toggleDarkMode: state => {
+      state.theme = state.theme === 'light' ? 'dark' : 'light';
     },
   },
   extraReducers: builder => {
@@ -67,11 +99,28 @@ export const blogSlice = createSlice({
       state.error = action.error.message;
     });
 
-    builder.addCase(deleteItemBlog.pending, (state, _) => {
+    builder.addCase(updateItemBlog.pending, (state, _) => {
+      state.loading = true;
+      state.error = null;
+    });
+
+    builder.addCase(updateItemBlog.fulfilled, (state, action) => {
+      const index = state.data.findIndex(blog => blog.id === action.payload.id);
+      if (index !== -1) {
+        state.data[index] = action.payload;
+      }
+      state.loading = false;
+    });
+
+    builder.addCase(updateItemBlog.rejected, (state, action: any) => {
+      state.loading = false;
+      state.error = action.payload;
+    });
+    builder.addCase(deleteBlog.pending, (state, _) => {
       state.loading = true;
     });
 
-    builder.addCase(deleteItemBlog.fulfilled, (state, action) => {
+    builder.addCase(deleteBlog.fulfilled, (state, action) => {
       state.data = state.data.filter(
         customer => customer.id !== action.payload,
       );
@@ -79,13 +128,13 @@ export const blogSlice = createSlice({
       state.loading = false;
     });
 
-    builder.addCase(deleteItemBlog.rejected, (state, action: any) => {
+    builder.addCase(deleteBlog.rejected, (state, action: any) => {
       state.loading = false;
       state.error = action.payload;
     });
   },
 });
 
-export const {setTotalCustomers} = blogSlice.actions;
+export const {toggleDarkMode} = blogSlice.actions;
 
 export default blogSlice.reducer;

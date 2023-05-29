@@ -8,20 +8,26 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import React, {useEffect} from 'react';
+import React, {useEffect, useState} from 'react';
 import {useDispatch, useSelector} from 'react-redux';
 import {AppDispatch} from '../redux/store';
 import {BlogItems} from '../models';
-import {getAllItemsBlog} from '../redux/slices/blogSlice';
+import {getAllItemsBlog, toggleDarkMode} from '../redux/slices/blogSlice';
+import Ionicons from 'react-native-vector-icons/Ionicons';
+import {getTimeAgo} from '../utils';
 
 const BlogScreen = ({navigation}: any) => {
   const dispatch = useDispatch<AppDispatch>();
-  const {loading, error, data} = useSelector(
+  const {loading, error, data, theme} = useSelector(
     (state: BlogItems) => state.blogSlice,
   );
 
   const goToDetail = (id: number): any => {
     navigation.navigate('BlogDetails', {id: id});
+  };
+
+  const handleToggle = () => {
+    dispatch(toggleDarkMode());
   };
 
   useEffect(() => {
@@ -45,7 +51,26 @@ const BlogScreen = ({navigation}: any) => {
   }
 
   return (
-    <SafeAreaView>
+    <SafeAreaView
+      style={[styles.lightContainer, theme === 'dark' && styles.darkContainer]}>
+      <View style={styles.header}>
+        <TouchableOpacity>
+          <Ionicons
+            name="sunny"
+            size={20}
+            color={theme === 'dark' ? '#e3e3e3' : '#000'}
+            onPress={() => handleToggle()}
+          />
+        </TouchableOpacity>
+        <Text style={[theme === 'dark' && {color: '#e3e3e3'}]}>All Blogs</Text>
+        <TouchableOpacity>
+          <Ionicons
+            name="notifications"
+            size={20}
+            color={theme === 'dark' ? '#e3e3e3' : '#000'}
+          />
+        </TouchableOpacity>
+      </View>
       {loading === 'pending' ? (
         <ActivityIndicator />
       ) : (
@@ -61,8 +86,16 @@ const BlogScreen = ({navigation}: any) => {
                 onPress={() => goToDetail(item.id)}>
                 <Image source={{uri: item.avatar}} style={styles.avatar} />
                 <View style={styles.postContent}>
-                  <Text style={styles.title}>{item.title}</Text>
-                  {/* <Text style={styles.description}>{item.description}</Text> */}
+                  <Text
+                    style={[
+                      styles.title,
+                      theme === 'dark' && {color: '#e3e3e3'},
+                    ]}>
+                    {item.title}
+                  </Text>
+                  <Text style={styles.description}>
+                    {getTimeAgo(new Date(item.createdAt))}
+                  </Text>
                 </View>
               </TouchableOpacity>
             )}
@@ -80,6 +113,19 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  lightContainer: {
+    backgroundColor: '#fff',
+    flex: 1,
+  },
+  darkContainer: {
+    backgroundColor: 'black',
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginHorizontal: 16,
   },
   postContainer: {
     flexDirection: 'row',

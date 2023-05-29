@@ -1,10 +1,19 @@
 import {Image, StyleSheet, Text, View} from 'react-native';
 import React, {useEffect, useState} from 'react';
 import axios from 'axios';
+import {getTimeAgo} from '../utils';
+import {useDispatch} from 'react-redux';
+import {AppDispatch} from '../redux/store';
+import {deleteBlog} from '../redux/slices/blogSlice';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 
 const BlogItemDetailScreen = ({route, navigation}: any) => {
   const {id} = route.params;
   const [detail, setDetail] = useState<any>();
+  const dispatch = useDispatch<AppDispatch>();
+  const handleDelete = (id: number) => {
+    dispatch(deleteBlog(id));
+  };
 
   useEffect(() => {
     const fetchBlogDetails = async () => {
@@ -27,10 +36,17 @@ const BlogItemDetailScreen = ({route, navigation}: any) => {
           <Image source={{uri: detail.avatar}} style={styles?.avatar} />
           <View style={styles.detInfo}>
             <Text style={styles.title}>{detail?.title}</Text>
-            <Text style={styles.description}>{detail?.description}</Text>
+            <Ionicons
+              name="trash"
+              size={20}
+              color={'tomato'}
+              onPress={() => handleDelete(detail.id)}
+            />
+
             <Text style={styles.createdAt}>
-              Created At: {detail?.createdAt}
+              {getTimeAgo(new Date(detail.createdAt))}
             </Text>
+            <Text style={styles.description}>{detail?.description}</Text>
           </View>
         </>
       )}

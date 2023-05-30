@@ -1,46 +1,35 @@
-import React, {useState, useEffect} from 'react';
 import {
-  View,
+  StatusBar,
+  StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
-  StyleSheet,
+  View,
 } from 'react-native';
+import React, {useState} from 'react';
 import {useDispatch, useSelector} from 'react-redux';
 import {createItemBlog, updateItemBlog} from '../redux/slices/blogSlice';
 import {AppDispatch} from '../redux/store';
+import {BlogItems} from '../models';
 
-const CreateScreen = ({route}: any) => {
-  const {id} = route.params;
-  const [title, setTitle] = useState(id ? route.params.title : '');
-  const [description, setDescription] = useState(
-    id ? route.params.description : '',
-  );
+const CreateScreen = () => {
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
   const dispatch = useDispatch<AppDispatch>();
-  const {theme, data} = useSelector((state: any) => state.blogSlice);
+  const {data, theme} = useSelector((state: BlogItems) => state.blogSlice);
 
-  useEffect(() => {
-    if (id) {
-      const item = data.find((item: any) => item.id === id);
-      if (item) {
-        setTitle(item.title);
-        setDescription(item.description);
-      }
-    }
-  }, [data, id]);
-
-  const handleUpdateBlog = () => {
+  const handleCreateBlog = () => {
     const blogData = {
       title,
       description,
     };
-    if (id) {
-      dispatch(updateItemBlog({id, blogData}));
+    setTitle('');
+    setDescription('');
+    if (data?.id) {
+      dispatch(updateItemBlog({id: data.id, blogData}));
     } else {
       dispatch(createItemBlog(blogData));
     }
-    setTitle('');
-    setDescription('');
   };
 
   return (
@@ -49,8 +38,11 @@ const CreateScreen = ({route}: any) => {
         styles.container,
         theme === 'dark' && {backgroundColor: '#151517'},
       ]}>
+      <StatusBar
+        barStyle={theme === 'dark' ? 'light-content' : 'dark-content'}
+      />
       <Text style={[styles.title, theme === 'dark' && {color: '#fff'}]}>
-        {id ? 'Edit Blog' : 'Create Blog'}
+        Create Blog
       </Text>
 
       <TextInput
@@ -68,28 +60,29 @@ const CreateScreen = ({route}: any) => {
         onChangeText={setDescription}
         placeholderTextColor={theme === 'dark' ? '#aaa' : '#888'}
       />
-
       <View style={styles.buttonsContainer}>
         <TouchableOpacity
           style={[
             styles.createButton,
             theme === 'dark' && {backgroundColor: '#A059F1'},
           ]}
-          onPress={handleUpdateBlog}>
-          <Text style={styles.buttonText}>{id ? 'Update' : 'Create'}</Text>
+          onPress={handleCreateBlog}>
+          <Text style={styles.buttonText}>Create</Text>
         </TouchableOpacity>
       </View>
     </View>
   );
 };
 
+export default CreateScreen;
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 16,
-    backgroundColor: '#fff',
-    alignItems: 'center',
     justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'white',
+    padding: 16,
   },
   title: {
     fontSize: 20,
@@ -99,28 +92,35 @@ const styles = StyleSheet.create({
   input: {
     width: '100%',
     height: 40,
+    borderColor: 'gray',
     borderWidth: 1,
-    borderColor: '#888',
     borderRadius: 4,
-    paddingHorizontal: 8,
     marginBottom: 16,
+    paddingHorizontal: 8,
   },
-  buttonsContainer: {
+  button: {
     width: '100%',
+    height: 40,
+    backgroundColor: 'red',
+    borderRadius: 4,
+    justifyContent: 'center',
     alignItems: 'center',
   },
-  createButton: {
-    backgroundColor: '#FE4962',
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 4,
-    marginBottom: 16,
-  },
   buttonText: {
-    color: '#fff',
+    color: 'white',
     fontWeight: 'bold',
-    fontSize: 16,
+  },
+  buttonsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%',
+  },
+  createButton: {
+    flex: 1,
+    height: 40,
+    backgroundColor: '#FE4962',
+    borderRadius: 4,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });
-
-export default CreateScreen;

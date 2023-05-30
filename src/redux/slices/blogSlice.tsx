@@ -58,8 +58,22 @@ export const deleteBlog = createAsyncThunk(
     }
   },
 );
+export const getById = createAsyncThunk(
+  'getById/blogs',
+  async (id: number, {rejectWithValue}) => {
+    try {
+      const response = await axios.get(
+        `https://64731455d784bccb4a3c3e14.mockapi.io/blogs/${id}`,
+      );
+      return response.data;
+    } catch (error: any) {
+      rejectWithValue(error.message);
+    }
+  },
+);
 
 interface BlogState {
+  searchQuery: string;
   data: any[];
   total: number;
   loading: boolean;
@@ -73,6 +87,7 @@ const initialState: BlogState = {
   loading: true,
   error: null,
   theme: 'dark',
+  searchQuery: '',
 };
 
 export const blogSlice = createSlice({
@@ -81,6 +96,9 @@ export const blogSlice = createSlice({
   reducers: {
     toggleDarkMode: state => {
       state.theme = state.theme === 'light' ? 'dark' : 'light';
+    },
+    setSearchQuery: (state, action) => {
+      state.searchQuery = action.payload;
     },
   },
   extraReducers: builder => {
@@ -119,6 +137,18 @@ export const blogSlice = createSlice({
     builder.addCase(deleteBlog.pending, (state, _) => {
       state.loading = true;
     });
+    builder.addCase(getById.pending, state => {
+      state.loading = true;
+      state.error = null;
+    });
+    builder.addCase(getById.fulfilled, (state, action) => {
+      state.data = [action.payload];
+      state.loading = false;
+    });
+    builder.addCase(getById.rejected, (state, action: any) => {
+      state.loading = false;
+      state.error = action.payload;
+    });
 
     builder.addCase(deleteBlog.fulfilled, (state, action) => {
       state.data = state.data.filter(
@@ -135,6 +165,6 @@ export const blogSlice = createSlice({
   },
 });
 
-export const {toggleDarkMode} = blogSlice.actions;
+export const {toggleDarkMode, setSearchQuery} = blogSlice.actions;
 
 export default blogSlice.reducer;

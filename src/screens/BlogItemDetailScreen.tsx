@@ -1,47 +1,60 @@
+import React, {useEffect, useState} from 'react';
 import {
   Image,
   SafeAreaView,
   StatusBar,
   StyleSheet,
   Text,
+  TouchableOpacity,
   View,
 } from 'react-native';
-import React, {useEffect, useState} from 'react';
-import axios from 'axios';
-import {getTimeAgo} from '../utils';
-import {useDispatch, useSelector} from 'react-redux';
-import {AppDispatch} from '../redux/store';
-import {deleteBlog} from '../redux/slices/blogSlice';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import {useDispatch, useSelector} from 'react-redux';
 import {BlogItems} from '../models';
+import {getById} from '../redux/slices/blogSlice';
+import {AppDispatch} from '../redux/store';
+import {getTimeAgo} from '../utils';
+import {addSavedItem, removeSavedItem} from '../redux/slices/saveSlice';
 
 const BlogItemDetailScreen = ({route, navigation}: any) => {
   const {id} = route.params;
   const [detail, setDetail] = useState<any>();
+  const [isSavedItem, setIsSavedItem] = useState(false);
   const dispatch = useDispatch<AppDispatch>();
-  const handleDelete = (id: number) => {
-    dispatch(deleteBlog(id));
-  };
   const {theme} = useSelector((state: BlogItems) => state.blogSlice);
-
+  const savedItems: any = useSelector(
+    (state: any) => state.saveItemsSlice.savedItems,
+  );
   useEffect(() => {
-    const fetchBlogDetails = async () => {
-      try {
-        const response = await axios.get(
-          `https://64731455d784bccb4a3c3e14.mockapi.io/blogs/${id}`,
+    dispatch(getById(id)).then(action => {
+      if (action.payload) {
+        setDetail(action.payload);
+        setIsSavedItem(
+          savedItems.some((item: any) => item.id === action.payload.id),
         );
-        setDetail(response.data);
-      } catch (error) {
-        console.error('Error fetching blog details:', error);
       }
-    };
-    fetchBlogDetails();
-  }, [id]);
+    });
+  }, [dispatch, id, savedItems]);
+
+  const handleToggleSavedItem = () => {
+    if (isSavedItem) {
+      dispatch(removeSavedItem(detail.id));
+      setIsSavedItem(false);
+    } else {
+      const isItemAlreadySaved = savedItems.some(
+        (item: any) => item.id === detail.id,
+      );
+      if (!isItemAlreadySaved) {
+        dispatch(addSavedItem(detail));
+        setIsSavedItem(true);
+      }
+    }
+  };
 
   return (
     <SafeAreaView
       style={[
-        styles.container,
+        styles.lightContainer,
         theme === 'dark' && {backgroundColor: '#151517'},
       ]}>
       <StatusBar
@@ -56,24 +69,31 @@ const BlogItemDetailScreen = ({route, navigation}: any) => {
             onPress={() => navigation.goBack()}
           />
         </View>
-        <View>
+        <TouchableOpacity>
           <Ionicons
-            name="trash"
+            name="create"
             size={20}
-            color={'tomato'}
-            onPress={() => handleDelete(detail.id)}
+            color={theme === 'dark' ? '#A059F1' : '#FE4962'}
           />
-        </View>
+        </TouchableOpacity>
       </View>
       {detail && (
         <View style={{justifyContent: 'center', alignItems: 'center'}}>
           <Image source={{uri: detail.avatar}} style={styles?.avatar} />
+          <View style={styles.bookmark}>
+            <TouchableOpacity onPress={handleToggleSavedItem}>
+              <Ionicons
+                name={isSavedItem ? 'bookmark' : 'bookmark-outline'}
+                size={20}
+                color={theme === 'dark' ? '#A059F1' : '#FE4962'}
+              />
+            </TouchableOpacity>
+          </View>
           <View style={styles.detInfo}>
             <Text
               style={[styles.title, theme === 'dark' && {color: '#CEC7C9'}]}>
               {detail?.title}
             </Text>
-
             <Text style={styles.createdAt}>
               {getTimeAgo(new Date(detail.createdAt))}
             </Text>
@@ -96,8 +116,10 @@ export default BlogItemDetailScreen;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    // justifyContent: 'center',
-    // alignItems: 'center',
+  },
+  lightContainer: {
+    backgroundColor: '#fff',
+    flex: 1,
   },
   header: {
     alignItems: 'center',
@@ -124,9 +146,22 @@ const styles = StyleSheet.create({
   createdAt: {
     fontSize: 14,
     color: '#666',
+    marginBottom: 10,
   },
   detInfo: {
     marginHorizontal: 20,
     alignItems: 'center',
+  },
+  editLine: {
+    flexDirection: 'row',
+  },
+  bookmark: {
+    position: 'absolute',
+    top: 75,
+    right: 45,
+    borderWidth: 1,
+    borderRadius: 50,
+    backgroundColor: '#000',
+    padding: 5,
   },
 });

@@ -5,11 +5,13 @@ export type BlogItems = {
   title?: string;
   avatar?: string;
   description?: string;
+  saveItem?: boolean;
 };
 
 export type TabParamList = {
   Home: undefined | any;
   Settings: undefined;
+  Liked: undefined;
 };
 
 export type StackParamList = {

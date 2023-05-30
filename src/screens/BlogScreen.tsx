@@ -6,6 +6,7 @@ import {
   StatusBar,
   StyleSheet,
   Text,
+  TextInput,
   TouchableOpacity,
   View,
 } from 'react-native';
@@ -13,15 +14,24 @@ import React, {useEffect} from 'react';
 import {useDispatch, useSelector} from 'react-redux';
 import {AppDispatch} from '../redux/store';
 import {BlogItems} from '../models';
-import {getAllItemsBlog, toggleDarkMode} from '../redux/slices/blogSlice';
+import {
+  deleteBlog,
+  getAllItemsBlog,
+  setSearchQuery,
+  toggleDarkMode,
+} from '../redux/slices/blogSlice';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import {getTimeAgo} from '../utils';
 
 const BlogScreen = ({navigation}: any) => {
   const dispatch = useDispatch<AppDispatch>();
-  const {loading, error, data, theme} = useSelector(
+  const {loading, error, data, theme, searchQuery} = useSelector(
     (state: BlogItems) => state.blogSlice,
   );
+
+  const handleDelete = (id: number) => {
+    dispatch(deleteBlog(id));
+  };
 
   const goToDetail = (id: number): any => {
     navigation.navigate('BlogDetails', {id: id});
@@ -34,22 +44,36 @@ const BlogScreen = ({navigation}: any) => {
     dispatch(toggleDarkMode());
   };
 
+  const filteredData = data.filter((blog: any) =>
+    blog.title.toLowerCase().includes(searchQuery.toLowerCase()),
+  );
+
   useEffect(() => {
     dispatch(getAllItemsBlog());
   }, [dispatch]);
 
   if (loading) {
     return (
-      <View style={styles.container}>
-        <Text>Loading...</Text>
+      <View
+        style={[
+          styles.container,
+          theme === 'dark' && {backgroundColor: '#151517'},
+        ]}>
+        <ActivityIndicator />
       </View>
     );
   }
 
   if (error) {
     return (
-      <View style={styles.container}>
-        <Text>Error: {error}</Text>
+      <View
+        style={[
+          styles.container,
+          theme === 'dark' && {backgroundColor: '#151517'},
+        ]}>
+        <Text style={[{fontSize: 18}, theme === 'dark' && {color: '#e3e3e3'}]}>
+          Error: {error}
+        </Text>
       </View>
     );
   }
@@ -80,14 +104,21 @@ const BlogScreen = ({navigation}: any) => {
           />
         </TouchableOpacity>
       </View>
+      <TextInput
+        style={[styles.input, theme === 'dark' && {color: '#aaa'}]}
+        value={searchQuery}
+        onChangeText={query => dispatch(setSearchQuery(query))}
+        placeholder="Search..."
+        placeholderTextColor={theme === 'dark' ? '#aaa' : '#888'}
+      />
       {loading === 'pending' ? (
         <ActivityIndicator />
       ) : (
-        <View>
+        <>
           <FlatList
             refreshing={false}
             onRefresh={refresh}
-            data={data}
+            data={filteredData}
             keyExtractor={item => item.id.toString()}
             showsVerticalScrollIndicator={false}
             renderItem={({item}: any) => (
@@ -99,21 +130,31 @@ const BlogScreen = ({navigation}: any) => {
                 onPress={() => goToDetail(item.id)}>
                 <Image source={{uri: item.avatar}} style={styles.avatar} />
                 <View style={styles.postContent}>
-                  <Text
-                    style={[
-                      styles.title,
-                      theme === 'dark' && {color: '#CEC7C9'},
-                    ]}>
-                    {item.title}
-                  </Text>
-                  <Text style={styles.description}>
-                    {getTimeAgo(new Date(item.createdAt))}
-                  </Text>
+                  <View>
+                    <Text
+                      style={[
+                        styles.title,
+                        theme === 'dark' && {color: '#CEC7C9'},
+                      ]}>
+                      {item.title}
+                    </Text>
+                    <Text style={styles.description}>
+                      {getTimeAgo(new Date(item.createdAt))}
+                    </Text>
+                  </View>
+                  <View>
+                    <Ionicons
+                      name="trash"
+                      size={20}
+                      color={'#FE4962'}
+                      onPress={() => handleDelete(item.id)}
+                    />
+                  </View>
                 </View>
               </TouchableOpacity>
             )}
           />
-        </View>
+        </>
       )}
     </SafeAreaView>
   );
@@ -156,6 +197,9 @@ const styles = StyleSheet.create({
   },
   postContent: {
     flex: 1,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   title: {
     fontSize: 16,
@@ -165,5 +209,15 @@ const styles = StyleSheet.create({
   description: {
     fontSize: 14,
     color: '#666',
+  },
+  input: {
+    // width: '100%',
+    height: 40,
+    borderColor: '#666',
+    borderWidth: 0.8,
+    borderRadius: 4,
+    marginBottom: 16,
+    paddingHorizontal: 8,
+    marginHorizontal: 15,
   },
 });

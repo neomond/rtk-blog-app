@@ -1,31 +1,46 @@
+import React, {useState, useEffect} from 'react';
 import {
-  StatusBar,
-  StyleSheet,
+  View,
   Text,
   TextInput,
   TouchableOpacity,
-  View,
+  StyleSheet,
 } from 'react-native';
-import React, {useState} from 'react';
 import {useDispatch, useSelector} from 'react-redux';
-import {createItemBlog} from '../redux/slices/blogSlice';
+import {createItemBlog, updateItemBlog} from '../redux/slices/blogSlice';
 import {AppDispatch} from '../redux/store';
-import {BlogItems} from '../models';
 
-const CreateScreen = () => {
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
+const CreateScreen = ({route}: any) => {
+  const {id} = route.params;
+  const [title, setTitle] = useState(id ? route.params.title : '');
+  const [description, setDescription] = useState(
+    id ? route.params.description : '',
+  );
   const dispatch = useDispatch<AppDispatch>();
-  const {theme} = useSelector((state: BlogItems) => state.blogSlice);
+  const {theme, data} = useSelector((state: any) => state.blogSlice);
 
-  const handleCreateBlog = () => {
+  useEffect(() => {
+    if (id) {
+      const item = data.find((item: any) => item.id === id);
+      if (item) {
+        setTitle(item.title);
+        setDescription(item.description);
+      }
+    }
+  }, [data, id]);
+
+  const handleUpdateBlog = () => {
     const blogData = {
       title,
       description,
     };
+    if (id) {
+      dispatch(updateItemBlog({id, blogData}));
+    } else {
+      dispatch(createItemBlog(blogData));
+    }
     setTitle('');
     setDescription('');
-    dispatch(createItemBlog(blogData));
   };
 
   return (
@@ -34,11 +49,8 @@ const CreateScreen = () => {
         styles.container,
         theme === 'dark' && {backgroundColor: '#151517'},
       ]}>
-      <StatusBar
-        barStyle={theme === 'dark' ? 'light-content' : 'dark-content'}
-      />
       <Text style={[styles.title, theme === 'dark' && {color: '#fff'}]}>
-        Create Blog
+        {id ? 'Edit Blog' : 'Create Blog'}
       </Text>
 
       <TextInput
@@ -56,29 +68,28 @@ const CreateScreen = () => {
         onChangeText={setDescription}
         placeholderTextColor={theme === 'dark' ? '#aaa' : '#888'}
       />
+
       <View style={styles.buttonsContainer}>
         <TouchableOpacity
           style={[
             styles.createButton,
             theme === 'dark' && {backgroundColor: '#A059F1'},
           ]}
-          onPress={handleCreateBlog}>
-          <Text style={styles.buttonText}>Create</Text>
+          onPress={handleUpdateBlog}>
+          <Text style={styles.buttonText}>{id ? 'Update' : 'Create'}</Text>
         </TouchableOpacity>
       </View>
     </View>
   );
 };
 
-export default CreateScreen;
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'white',
     padding: 16,
+    backgroundColor: '#fff',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   title: {
     fontSize: 20,
@@ -88,35 +99,28 @@ const styles = StyleSheet.create({
   input: {
     width: '100%',
     height: 40,
-    borderColor: 'gray',
     borderWidth: 1,
+    borderColor: '#888',
     borderRadius: 4,
-    marginBottom: 16,
     paddingHorizontal: 8,
-  },
-  button: {
-    width: '100%',
-    height: 40,
-    backgroundColor: 'red',
-    borderRadius: 4,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  buttonText: {
-    color: 'white',
-    fontWeight: 'bold',
+    marginBottom: 16,
   },
   buttonsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
     width: '100%',
-  },
-  createButton: {
-    flex: 1,
-    height: 40,
-    backgroundColor: '#FE4962',
-    borderRadius: 4,
-    justifyContent: 'center',
     alignItems: 'center',
   },
+  createButton: {
+    backgroundColor: '#FE4962',
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 4,
+    marginBottom: 16,
+  },
+  buttonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
 });
+
+export default CreateScreen;

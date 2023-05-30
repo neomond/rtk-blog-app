@@ -36,6 +36,10 @@ const BlogItemDetailScreen = ({route, navigation}: any) => {
     });
   }, [dispatch, id, savedItems]);
 
+  const handleEditItem = () => {
+    navigation.navigate('Settings', {id});
+  };
+
   const handleToggleSavedItem = () => {
     if (isSavedItem) {
       dispatch(removeSavedItem(detail.id));
@@ -74,6 +78,7 @@ const BlogItemDetailScreen = ({route, navigation}: any) => {
             name="create"
             size={20}
             color={theme === 'dark' ? '#A059F1' : '#FE4962'}
+            onPress={handleEditItem}
           />
         </TouchableOpacity>
       </View>

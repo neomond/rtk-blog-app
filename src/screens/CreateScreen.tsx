@@ -42,7 +42,7 @@ const CreateScreen = () => {
       </Text>
 
       <TextInput
-        style={styles.input}
+        style={[styles.input, theme === 'dark' && {color: '#aaa'}]}
         placeholder="Title"
         value={title}
         onChangeText={setTitle}
@@ -50,7 +50,7 @@ const CreateScreen = () => {
       />
 
       <TextInput
-        style={styles.input}
+        style={[styles.input, theme === 'dark' && {color: '#aaa'}]}
         placeholder="Description"
         value={description}
         onChangeText={setDescription}

@@ -26,6 +26,9 @@ const BlogScreen = ({navigation}: any) => {
   const goToDetail = (id: number): any => {
     navigation.navigate('BlogDetails', {id: id});
   };
+  const refresh = () => {
+    dispatch(getAllItemsBlog());
+  };
 
   const handleToggle = () => {
     dispatch(toggleDarkMode());
@@ -83,6 +86,7 @@ const BlogScreen = ({navigation}: any) => {
         <View>
           <FlatList
             refreshing={false}
+            onRefresh={refresh}
             data={data}
             keyExtractor={item => item.id.toString()}
             showsVerticalScrollIndicator={false}

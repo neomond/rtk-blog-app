@@ -113,6 +113,13 @@ const BlogScreen = ({navigation}: any) => {
       />
       {loading === 'pending' ? (
         <ActivityIndicator />
+      ) : filteredData.length === 0 ? (
+        <View style={styles.container}>
+          <Text
+            style={[{fontSize: 18}, theme === 'dark' && {color: '#e3e3e3'}]}>
+            No data found.
+          </Text>
+        </View>
       ) : (
         <>
           <FlatList
